@@ -10,7 +10,7 @@ class githubsync::dashboard {
 
   cron { "update githubsync dashboard":
     ensure  => present,
-    command => "/usr/local/bin/githubsync-update-status.sh 2>&1 > /dev/null; /usr/local/bin/githubsync-dashboard.rb > /var/local/run/githubsync/current-status.txt"
+    command => "/usr/local/bin/githubsync-update-status.sh 2>&1 > /dev/null; /usr/local/bin/githubsync-dashboard.rb > /var/local/run/githubsync/current-status.txt",
     user    => "githubsync",
     hour    => "*/6",
     minute  => ip_to_cron(),
