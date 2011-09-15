@@ -17,4 +17,11 @@ class githubsync::dashboard {
     require => [Class["githubsync"], File["/usr/local/bin/githubsync-dashboard.rb"]],
   }
 
+  file { "/var/local/run/githubsync/current-status.txt":
+    owner  => "githubsync",
+    group  => "githubsync",
+    mode   => 0644,
+    ensure => present,
+  }
+
 }
