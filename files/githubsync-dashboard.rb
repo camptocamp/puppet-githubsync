@@ -15,17 +15,17 @@ modules.sort.each do |m|
 
     printf("\n\n%-15s ", m)
 
-    if github_missing.count == 0 and here_missing.count == 0
+    if github_missing.length == 0 and here_missing.length == 0
       print "♡♡♡ in sync"
     else
       print "!!!"
-      if github_missing.count != 0
-        count = github_missing.count
+      if github_missing.length != 0
+        count = github_missing.length
         head  = g.sha(g.local_head(m))
         print " #{count} commit(s) missing on github (#{head})"
       end
-      if here_missing.count != 0
-        count = here_missing.count
+      if here_missing.length != 0
+        count = here_missing.length
         head  = g.sha(g.github_head(m))
         print " #{count} commit(s) missing in local repo (#{head})"
       end

@@ -16,13 +16,13 @@ g.modules.each do |m|
       github_missing = g.missing_on_github(m)
       here_missing   = g.missing_on_local_repo(m)
 
-      if github_missing.count == 0 and here_missing.count == 0
+      if github_missing.length == 0 and here_missing.length == 0
         file.print "echo '#{m}: in sync'\n"
         file.print "exit 0\n"
       else
         file.print "echo '#{m}:"
-        file.print " #{github_missing.count} commit(s) missing on github" if github_missing.count != 0
-        file.print " #{here_missing.count} commit(s) missing in local repo" if here_missing.count != 0
+        file.print " #{github_missing.length} commit(s) missing on github" if github_missing.length != 0
+        file.print " #{here_missing.length} commit(s) missing in local repo" if here_missing.length != 0
         file.print "'\nexit 2\n"
       end
     else
