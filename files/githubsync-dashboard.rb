@@ -16,7 +16,7 @@ g = GitHubSync.new("/var/local/run/githubsync/puppetmaster")
 
 modules = $*.empty? ? g.modules : $*
 
-print "\n   @@@ GitHub sync status at: " + Time.new.to_s
+print "\n   @@@ GitHub sync status at: #{g.timestamp}"
 
 modules.sort.each do |m|
   msg = ''
@@ -39,6 +39,7 @@ modules.sort.each do |m|
         head  = g.sha(g.github_head(m))
         msg << "#{count} commit(s) missing in local repo (#{head}) "
       end
+
       msg << "\n"; 20.times { msg << " " }
       msg << (github_missing + here_missing).collect { |c| c[:author] }.uniq.join(", ")
     end

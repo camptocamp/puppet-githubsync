@@ -55,6 +55,11 @@ class GitHubSync
     @git.gcommit(commit).sha.slice(0..7)
   end
 
+  # retourne le timstamp de la dernière synchro
+  def timestamp
+    @git.config("githubsync.timestamp")
+  end
+
   # retourne un Array de Hashs contenant les metainfos de chaque commits
   def commits_between(commit1, commit2)
     ret = []
