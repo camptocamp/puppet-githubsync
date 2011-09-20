@@ -2,39 +2,52 @@
 
 require 'githubsync'
 
+def printmsg(m, status, msg)
+  s = { :insync   => "♡♡♡ in sync",
+        :desync   => "!!!",
+        :notfound => "??? repo not found on github" }
+
+  unless $*.empty? and status == :insync
+    printf("\n\n%-15s %s %s", m, s[status], msg)
+  end
+end
+
 g = GitHubSync.new("/var/local/run/githubsync/puppetmaster")
 
 modules = $*.empty? ? g.modules : $*
 
-print "Status at: " + Time.new.to_s
+print "\n   @@@ GitHub sync status at: " + Time.new.to_s
 
 modules.sort.each do |m|
+  msg = ''
+
   if g.on_github?(m)
     github_missing = g.missing_on_github(m)
     here_missing   = g.missing_on_local_repo(m)
 
-    printf("\n\n%-15s ", m)
-
     if github_missing.length == 0 and here_missing.length == 0
-      print "♡♡♡ in sync"
+      status = :insync
     else
-      print "!!!"
+      status = :desync
       if github_missing.length != 0
         count = github_missing.length
         head  = g.sha(g.local_head(m))
-        print " #{count} commit(s) missing on github (#{head})"
+        msg << "#{count} commit(s) missing on github (#{head}) "
       end
       if here_missing.length != 0
         count = here_missing.length
         head  = g.sha(g.github_head(m))
-        print " #{count} commit(s) missing in local repo (#{head})"
+        msg << "#{count} commit(s) missing in local repo (#{head}) "
       end
-      print "\n"; 20.times { print " " }
-      print (github_missing + here_missing).collect { |c| c[:author] }.uniq.join(", ")
+      msg << "\n"; 20.times { msg << " " }
+      msg << (github_missing + here_missing).collect { |c| c[:author] }.uniq.join(", ")
     end
 
   else
-    printf("\n\n%-15s ??? repository not found on github\n", m)
+    status = :notfound
   end
+
+  printmsg(m, status, msg)
 end
 
+print "\n\n"
