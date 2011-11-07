@@ -70,6 +70,8 @@ for module in $(ls modules); do
 done
 
 cd "$WORKDIR" && git config githubsync.timestamp "$(date)"
+find "${WORKDIR}/.git/subtree-cache/" -type f -delete
+cd "$WORKDIR" && git repack -A -d && git gc --aggressive
 '),
   }
 
