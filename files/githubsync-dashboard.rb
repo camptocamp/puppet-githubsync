@@ -24,11 +24,13 @@ modules.sort.each do |m|
   if g.on_github?(m)
     github_missing = g.missing_on_github(m)
     here_missing   = g.missing_on_local_repo(m)
+    files_changed  = g.files_changed?(g.local_head(m), g.github_head(m))
 
-    if github_missing.length == 0 and here_missing.length == 0
+    if files_changed == 0
       status = :insync
     else
       status = :desync
+      msg << "#{files_changed} file(s) changed. "
       if github_missing.length != 0
         count = github_missing.length
         head  = g.sha(g.local_head(m))

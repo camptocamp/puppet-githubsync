@@ -75,6 +75,10 @@ class GitHubSync
     ret
   end
 
+  def files_changed?(commit1, commit2)
+    @git.diff(commit1, commit2).size
+  end
+
 end
 
 #require 'pp'
