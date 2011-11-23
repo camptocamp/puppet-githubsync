@@ -3,7 +3,7 @@ class githubsync::dashboard {
   include githubsync
 
   file { "/usr/local/bin/githubsync-dashboard.rb":
-    source  => "puppet:///githubsync/githubsync-dashboard.rb",
+    source  => "puppet:///modules/githubsync/githubsync-dashboard.rb",
     mode    => 0755,
     require => File["githubsync.rb"],
   }

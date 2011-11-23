@@ -13,7 +13,7 @@ class githubsync {
       Debian => "/usr/local/lib/site_ruby/1.8/githubsync.rb",
       RedHat => "/usr/lib/ruby/site_ruby/1.8/githubsync.rb",
     },
-    source  => "puppet:///githubsync/githubsync.rb",
+    source  => "puppet:///modules/githubsync/githubsync.rb",
     require => Package["ruby-git"],
   }
 

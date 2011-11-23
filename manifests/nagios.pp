@@ -3,7 +3,7 @@ class githubsync::nagios {
   include githubsync
 
   file { "/usr/local/bin/githubsync-mknagioschecks.rb":
-    source  => "puppet:///githubsync/githubsync-mknagioschecks.rb",
+    source  => "puppet:///modules/githubsync/githubsync-mknagioschecks.rb",
     mode    => 0755,
     require => File["githubsync.rb"],
   }
