@@ -66,7 +66,7 @@ cd "$WORKDIR" && \
 for module in $(ls modules); do
   git branch -D "local-${module}"
   git remote add --fetch "${module}-on-github" "git@github.com:camptocamp/puppet-${module}.git" || git remote update "${module}-on-github"
-  /usr/local/bin/git-subtree split -P "modules/${module}" --branch "local-${module}"
+  /usr/local/bin/git-subtree split -q -P "modules/${module}" --branch "local-${module}"
 done
 
 cd "$WORKDIR" && git config githubsync.timestamp "$(date)"
