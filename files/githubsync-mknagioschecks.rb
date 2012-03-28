@@ -35,10 +35,10 @@ File.open(tmpfile.path, "w") do |file|
   end
 
   if !status[:critical].empty?
-    file.print "/bin/echo '#{status[:critical].count} modules not in sync: #{status[:critical].join(", ")}'\n"
+    file.print "/bin/echo '#{status[:critical].length} modules not in sync: #{status[:critical].join(", ")}'\n"
     file.print "exit 2\n"
   elsif !status[:warning].empty?
-    file.print "/bin/echo '#{status[:warning].count} modules missing: #{status[:warning].join(", ")}'\n"
+    file.print "/bin/echo '#{status[:warning].length} modules missing: #{status[:warning].join(", ")}'\n"
     file.print "exit 1\n"
   elsif status[:ok].length == g.modules.length
     file.print "/bin/echo 'all modules in sync with github'\n"
