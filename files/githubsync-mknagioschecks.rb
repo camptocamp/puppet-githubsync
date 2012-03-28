@@ -7,7 +7,7 @@ g = GitHubSync.new("/var/local/run/githubsync/puppetmaster/")
 
 destdir = "/var/local/run/githubsync/nagios-plugins"
 target  = "#{destdir}/check-github-module-sync.sh"
-tmpfile = Tempfile.new("githubsync-nagiosplugin")
+tmpfile = Tempfile.new("githubsync-nagiosplugin", destdir)
 
 File.open(tmpfile.path, "w") do |file|
 
