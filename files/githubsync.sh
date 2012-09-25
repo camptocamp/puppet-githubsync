@@ -60,21 +60,23 @@ compute_diff () {
 
 update_module () {
 
-  mod=$1
-  msg="Auto-updated ${mod} run by ${0}."
+  mod="$1"
+  local msg="Auto-updated ${mod} run by ${0}."
 
-  test -z "${mod}" || return 1
+  test -n "${mod}" || return 1
   cd "${PMDIR}" || return 1
 
   git remote add "up-${mod}" "${MODDIR}/${mod}"
-  git-subtree pull -q -m "${msg}" -P "modules/${mod}" "up-${mod}" master
+  git-subtree pull -q -m "${msg}" -P "modules/${mod}" "up-${mod}" master && \
+    echo "UPDATED module ${mod}"
 
   if [ $? != 0 ]; then
     echo "FAILED git subtree pull ${mod}"
     git reset --hard
     return 1
   else
-    git push -n origin master
+    git push origin master && \
+    echo "PUSHED updated module ${mod} to ${WORKDIR}"
   fi
 }
 
@@ -101,18 +103,18 @@ for mod in $(ls "${PMDIR}/modules/"); do
   fetch_from_github $mod
 
   if [ $? != 0 ]; then
-    echo -n "\nProblem fetching module ${mod} from github.\n" >> $OUTPUT
+    echo -e "\nProblem fetching module ${mod} from github.\n" >> $OUTPUT
     continue
   fi
 
   if ! compute_diff $local $github 2>&1 > /dev/null; then
 
     msg="Failed to update module ${mod}, manual investigation required."
-    update_module $mod || echo -n "\n${msg}\n" >> $OUTPUT
+    update_module $mod || echo -e "\n\n${msg}" >> $OUTPUT
 
     # diff once again, output to status file
     if ! compute_diff $local $github 2>&1 > /dev/null; then
-      echo -n "\nModule '${mod}' DIFFERS from github:\n" >> $OUTPUT
+      echo -e "\nModule '${mod}' DIFFERS from github:\n" >> $OUTPUT
       compute_diff $local $github >> $OUTPUT
     fi
   fi
