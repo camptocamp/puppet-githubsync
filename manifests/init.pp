@@ -69,7 +69,7 @@ cd "$WORKDIR" && git repack -A -d && git gc --aggressive
     command => "/usr/local/bin/githubsync-update-status.sh 2>&1 | logger -t githubsync-update-status",
     user    => "githubsync",
     hour    => "*/5",
-    minute  => ip_to_cron(),
+    minute  => fqdn_rand(60),
     require => File["/usr/local/bin/githubsync-dashboard.rb"],
   }
 

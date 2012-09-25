@@ -18,7 +18,7 @@ class githubsync::nagios {
     command => "/usr/local/bin/githubsync-mknagioschecks.rb",
     user    => "githubsync",
     hour    => "*/6",
-    minute  => ip_to_cron(),
+    minute  => fqdn_rand(60),
     require => [Class["githubsync"], File["/usr/local/bin/githubsync-mknagioschecks.rb"]],
   }
 

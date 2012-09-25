@@ -13,7 +13,7 @@ class githubsync::dashboard {
     command => "(/usr/local/bin/githubsync-dashboard.rb && /bin/echo \"Tip: try running 'githubsync-dashboard.rb <module>'\") > /var/local/run/githubsync/current-status.txt",
     user    => "githubsync",
     hour    => "*/6",
-    minute  => ip_to_cron(),
+    minute  => fqdn_rand(60),
     require => [Class["githubsync"], File["/usr/local/bin/githubsync-dashboard.rb"]],
   }
 
