@@ -23,4 +23,14 @@ class githubsync {
     ensure => absent,
   }
 
+  cron { "update githubsync dashboard":
+    ensure => absent,
+    user   => "githubsync",
+  }
+
+  cron { "update githubsync nagios plugin":
+    ensure => absent,
+    user   => "githubsync",
+  }
+
 }
