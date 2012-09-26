@@ -76,7 +76,7 @@ update_module () {
     return 1
   else
     git push origin master && \
-    echo "Pushed updated module ${mod} to ${PMDIR}"
+    echo "Pushed updated module ${mod} to ${ORIGIN}"
   fi
 }
 
