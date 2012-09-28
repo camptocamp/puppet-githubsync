@@ -52,28 +52,29 @@ fetch_from_github () {
 }
 
 
-compute_diff () {
+is_identical () {
   local="$1"
   github="$2"
 
-  diff -qr -x '.git' "${local}" "${github}"
+  diff -qr -x '.git' "${local}" "${github}" 2>&1 > /dev/null
 }
 
 
 update_module () {
 
   mod="$1"
-  local msg="Updated ${mod} module, using ${0}."
+  commitmsg="Updated ${mod} module, using ${0}."
 
   test -n "${mod}" || return 1
   cd "${PMDIR}" || return 1
 
   git remote add "up-${mod}" "${MODDIR}/${mod}"
-  git-subtree pull -q -m "${msg}" -P "modules/${mod}" "up-${mod}" master && \
+  git-subtree pull -q -m "${commitmsg}" -P "modules/${mod}" "up-${mod}" && \
     echo "Successfully updated module ${mod}"
 
   if [ $? != 0 ]; then
-    echo "Failed running: git-subtree pull -P modules/${mod} up-${mod} master"
+    echo "\n\n    @@@ Running 'git-subtree pull -P modules/${mod} up-${mod}' failed, resetting changes." >> $OUTPUT
+    echo "Failed to pull changes using git-subtree"
     git reset --hard
     return 1
   else
@@ -107,19 +108,18 @@ for mod in $(ls "${PMDIR}/modules/"); do
   fetch_from_github $mod
 
   if [ $? != 0 ]; then
-    echo -e "\nFailed fetching module ${mod} from github.\n" >> $OUTPUT
+    /bin/echo -e "\n    @@@ Failed fetching module ${mod} from github.\n" >> $OUTPUT
     continue
   fi
 
-  if ! compute_diff $local $github 2>&1 > /dev/null; then
+  if ! is_identical $local $github; then
 
-    msg="Failed to update module ${mod}, manual investigation required."
-    update_module $mod || echo -e "\n\n${msg}" >> $OUTPUT
+    update_module $mod
 
     # diff once again, output to status file
-    if ! compute_diff $local $github 2>&1 > /dev/null; then
-      echo -e "\nModule '${mod}' differs from github, manual synchronisation required:\n" >> $OUTPUT
-      compute_diff $local $github >> $OUTPUT
+    if ! is_identical $local $github; then
+      /bin/echo -e "\n    @@@ Conflict merging module '${mod}', manual investigation required:\n" >> $OUTPUT
+      diff -ur -x '.git' $local $github >> $OUTPUT
     fi
   fi
 done
