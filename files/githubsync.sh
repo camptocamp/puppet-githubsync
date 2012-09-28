@@ -28,10 +28,12 @@ if [ $(id -nu) != "githubsync" ]; then
   exit 1
 fi
 
+PATH="/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
 WORKDIR="/var/local/run/githubsync"
 MODDIR="${WORKDIR}/modules"
 PMDIR="${WORKDIR}/puppetmaster"
 OUTPUT=$(mktemp)
+DATE=$(date +%Y-%m-%d_%s)
 
 
 fetch_from_github () {
@@ -75,7 +77,7 @@ update_module () {
     git reset --hard
     return 1
   else
-    git push origin master && \
+    git push origin $DATE:master && \
     echo "Pushed updated module ${mod} to ${ORIGIN}"
   fi
 }
@@ -83,10 +85,13 @@ update_module () {
 
 # clone puppetmaster
 if test -d "${PMDIR}"; then
-  (cd "${PMDIR}" && git pull -q origin master)
+  (cd "${PMDIR}" && git remote update origin)
 else
   git clone -q $ORIGIN $PMDIR
 fi
+
+(cd "${PMDIR}" && git branch $DATE origin/master && git checkout $DATE) || \
+  (echo "Failed checking out latest commits from ${ORIGIN}" && exit 1)
 
 # initialize status file
 echo -n "    @@@ GitHub sync status at: " > $OUTPUT
