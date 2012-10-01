@@ -28,6 +28,8 @@ if [ $(id -nu) != "githubsync" ]; then
   exit 1
 fi
 
+umask 0002
+
 PATH="/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
 WORKDIR="/var/local/run/githubsync"
 MODDIR="${WORKDIR}/modules"
