@@ -107,6 +107,9 @@ for mod in $(ls "${PMDIR}/modules/"); do
 
   mkdir -p $MODDIR
 
+  # re-download every module at each run
+  test -d "$github" && rm -fr "$github"
+
   fetch_from_github $mod
 
   if [ $? != 0 ]; then
