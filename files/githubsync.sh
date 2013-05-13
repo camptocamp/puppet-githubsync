@@ -37,6 +37,7 @@ PMDIR="${WORKDIR}/puppetmaster"
 OUTPUT=$(mktemp)
 DATE=$(date +%Y-%m-%d_%s)
 
+test -e /etc/profile.d/http_proxy.sh && . /etc/profile.d/http_proxy.sh
 
 fetch_from_github () {
   m="$1"
