@@ -3,7 +3,7 @@ class githubsync {
   file { '/usr/local/bin/githubsync.sh':
     ensure => present,
     mode   => '0755',
-    source => 'puppet:///githubsync/githubsync.sh',
+    source => 'puppet:///modules/githubsync/githubsync.sh',
   }
 
   file { ['/var/local/run/', '/var/local/run/githubsync/']:
