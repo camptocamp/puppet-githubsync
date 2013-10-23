@@ -107,7 +107,6 @@ date >> $OUTPUT
 # loop through each module
 echo -n "{\"date\": \"`date`\", \"modules\": {" >> $OUTPUT_JSON
 for mod in $(ls "${PMDIR}/modules/"); do
-echo "Doing module ${mod}" >&2
   local="${PMDIR}/modules/${mod}"
   github="${MODDIR}/${mod}"
 
