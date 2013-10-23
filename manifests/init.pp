@@ -6,6 +6,17 @@ class githubsync {
     source => 'puppet:///modules/githubsync/githubsync.sh',
   }
 
+  file { '/usr/local/bin/githubsync_gist_json.rb':
+    ensure => present,
+    mode   => '0755',
+    source => 'puppet:///modules/githubsync/githubsync_gist_json.rb',
+  }
+
+  package {['octokit', 'netrc']:
+    ensure   => installed,
+    provider => 'gem',
+  }
+
   file { ['/var/local/run/', '/var/local/run/githubsync/']:
     ensure => directory,
     owner  => 'githubsync',
