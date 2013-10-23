@@ -7,7 +7,7 @@
 require 'octokit'
 require 'facter'
 
-gist_id = ARGV
+gist_id = ARGV[0]
 
 client = Octokit::Client.new(:netrc => true)
 
