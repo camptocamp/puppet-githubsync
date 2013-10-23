@@ -147,3 +147,4 @@ echo "}}" >> $OUTPUT_JSON
 
 mv $OUTPUT "${WORKDIR}/current-status.txt"
 githubsync_gist_json.rb < $OUTPUT_JSON
+rm $OUTPUT_JSON
