@@ -12,6 +12,11 @@ class githubsync {
     source => 'puppet:///modules/githubsync/githubsync_gist_json.rb',
   }
 
+  package {'octokit':
+    ensure   => installed,
+    provider => 'gem',
+  }
+
   file { ['/var/local/run/', '/var/local/run/githubsync/']:
     ensure => directory,
     owner  => 'githubsync',
