@@ -1,9 +1,9 @@
 #!/bin/sh
 
 # help & input params
-if [ $# != 3 ]; then
+if [ $# != 4 ]; then
   cat << EOF
-Usage: $0 PROTOCOL USERNAME ORIGIN"
+Usage: $0 PROTOCOL USERNAME ORIGIN GIST_ID"
 Updates every module in puppetmaster git repository located at ORIGIN by
 fetching latest commits from USERNAME's github account using PROTOCOL.
 
@@ -15,6 +15,7 @@ else
   PROTO=$1
   USERNAME=$2
   ORIGIN=$3
+  GIST_ID=$4
 
   if [ "$PROTO" = "ssh" ]; then
     URI="git@github.com:${USERNAME}"
@@ -146,5 +147,5 @@ done
 echo "}}" >> $OUTPUT_JSON 
 
 mv $OUTPUT "${WORKDIR}/current-status.txt"
-githubsync_gist_json.rb < $OUTPUT_JSON
+githubsync_gist_json.rb $GIST_ID < $OUTPUT_JSON
 rm $OUTPUT_JSON
