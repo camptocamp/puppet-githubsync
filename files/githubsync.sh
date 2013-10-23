@@ -35,6 +35,7 @@ WORKDIR="/var/local/run/githubsync"
 MODDIR="${WORKDIR}/modules"
 PMDIR="${WORKDIR}/puppetmaster"
 OUTPUT=$(mktemp)
+OUTPUT_JSON=$(mktemp)
 DATE=$(date +%Y-%m-%d_%s)
 
 test -e /etc/profile.d/http_proxy.sh && . /etc/profile.d/http_proxy.sh
@@ -78,6 +79,7 @@ update_module () {
   if [ $? != 0 ]; then
     echo "\n\n    @@@ Running 'git-subtree pull -P modules/${mod} up-${mod}' failed, resetting changes." >> $OUTPUT
     echo "Failed to pull changes using git-subtree"
+    echo -n "\"${mod}\": {\"status\": \"subtree pull failed\"" >> $OUTPUT_JSON
     git reset --hard
     return 1
   else
@@ -102,9 +104,16 @@ echo -n "    @@@ GitHub sync status at: " > $OUTPUT
 date >> $OUTPUT
 
 # loop through each module
+echo -n "{\"date\": \"`date`\", \"modules\": {" >> $OUTPUT_JSON
 for mod in $(ls "${PMDIR}/modules/"); do
+echo "Doing module ${mod}" >&2
   local="${PMDIR}/modules/${mod}"
   github="${MODDIR}/${mod}"
+
+  if [ "x${add_comma}" = "xtrue" ]; then
+    echo -n "," >> $OUTPUT_JSON
+  fi
+  add_comma="true"
 
   mkdir -p $MODDIR
 
@@ -115,19 +124,26 @@ for mod in $(ls "${PMDIR}/modules/"); do
 
   if [ $? != 0 ]; then
     /bin/echo -e "\n    @@@ Failed fetching module ${mod} from github.\n" >> $OUTPUT
+    echo -n "\"${mod}\": {\"status\": \"failed fetching\"}" >> $OUTPUT_JSON
     continue
   fi
 
-  if ! is_identical $local $github; then
-
+  if is_identical $local $github; then
+    echo -n "\"${mod}\": {\"status\": \"identical\"}" >> $OUTPUT_JSON
+  else
     update_module $mod
 
     # diff once again, output to status file
-    if ! is_identical $local $github; then
+    if is_identical $local $github; then
+      echo -n "\"${mod}\": {\"status\": \"identical\"}" >> $OUTPUT_JSON
+    else
       /bin/echo -e "\n    @@@ Conflict merging module '${mod}', manual investigation required:\n" >> $OUTPUT
       diff -ur -x '.git' $local $github >> $OUTPUT
+      echo -n "\"${mod}\": {\"status\": \"merge conflict\"}" >> $OUTPUT_JSON
     fi
   fi
 done
+echo "}}" >> $OUTPUT_JSON 
 
 mv $OUTPUT "${WORKDIR}/current-status.txt"
+githubsync_gist_json.rb < $OUTPUT_JSON
