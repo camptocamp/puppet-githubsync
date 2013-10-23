@@ -12,7 +12,7 @@ class githubsync {
     source => 'puppet:///modules/githubsync/githubsync_gist_json.rb',
   }
 
-  package {'octokit':
+  package {['octokit', 'netrc']:
     ensure   => installed,
     provider => 'gem',
   }
