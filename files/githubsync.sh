@@ -105,8 +105,9 @@ echo -n "    @@@ GitHub sync status at: " > $OUTPUT
 date >> $OUTPUT
 
 # loop through each module
+DATE_JSON=$(date --rfc-2822 -u)
 echo -n "{\"files\": { \"`facter fqdn`.json\": { \"content\": \"" >> $OUTPUT_JSON
-echo -n "{\\\"date\\\": \\\"`date`\\\", \\\"modules\\\": {" >> $OUTPUT_JSON
+echo -n "{\\\"date\\\": \\\"${DATE_JSON}\\\", \\\"modules\\\": {" >> $OUTPUT_JSON
 for mod in $(ls "${PMDIR}/modules/"); do
   local="${PMDIR}/modules/${mod}"
   github="${MODDIR}/${mod}"
