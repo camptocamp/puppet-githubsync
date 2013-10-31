@@ -41,6 +41,12 @@ DATE=$(date +%Y-%m-%d_%s)
 
 test -e /etc/profile.d/http_proxy.sh && . /etc/profile.d/http_proxy.sh
 
+default_branch () {
+  m="$1"
+
+  curl --netrc -ks "https://api.github.com/repos/camptocamp/puppet-${m}" | jgrep -s "default_branch"
+}
+
 fetch_from_github () {
   m="$1"
 
@@ -48,9 +54,10 @@ fetch_from_github () {
 
   uri="${URI}/puppet-${m}"
   dir="${MODDIR}/${m}"
+  branch=$(default_branch "${m}")
 
   if test -d $dir; then
-    (cd $dir && git config remote.origin.url $uri && git pull -q origin master)
+    (cd $dir && git config remote.origin.url $uri && git pull -q origin $branch)
   else
     git clone -q $uri "${MODDIR}/${m}"
   fi
