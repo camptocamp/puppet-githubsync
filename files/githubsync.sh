@@ -155,6 +155,6 @@ done
 echo -n "}}" >> $OUTPUT_JSON 
 echo "\"}}}" >> $OUTPUT_JSON
 
-mv $OUTPUT "${WORKDIR}/current-status.txt"
+mv -f $OUTPUT "${WORKDIR}/current-status.txt"
 curl  --netrc --request PATCH --data "`cat ${OUTPUT_JSON}`" https://api.github.com/gists/$GIST_ID
 rm $OUTPUT_JSON
