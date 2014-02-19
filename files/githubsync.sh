@@ -81,12 +81,12 @@ update_module () {
   cd "${PMDIR}" || return 1
 
   git remote add "up-${mod}" "${MODDIR}/${mod}"
-  git-subtree pull -q -m "${commitmsg}" -P "modules/${mod}" "up-${mod}" && \
+  git subtree pull -q -m "${commitmsg}" -P "modules/${mod}" "up-${mod}" && \
     echo "Successfully updated module ${mod}"
 
   if [ $? != 0 ]; then
-    echo "\n\n    @@@ Running 'git-subtree pull -P modules/${mod} up-${mod}' failed, resetting changes." >> $OUTPUT
-    echo "Failed to pull changes using git-subtree"
+    echo "\n\n    @@@ Running 'git subtree pull -P modules/${mod} up-${mod}' failed, resetting changes." >> $OUTPUT
+    echo "Failed to pull changes using git subtree"
     #echo -n "\"${mod}\": {\"status\": \"subtree pull failed\"}" >> $OUTPUT_JSON
     git reset --hard
     return 1
