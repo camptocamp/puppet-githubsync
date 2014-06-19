@@ -24,8 +24,8 @@ else
   fi
 fi
 
-if [ $(id -nu) != "githubsync" ]; then
-  echo "Should only be run as githubsync user"
+if [ $(id -nu) != "<%= @user %>" ]; then
+  echo "Should only be run as <%= @user %> user"
   exit 1
 fi
 

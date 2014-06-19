@@ -1,14 +1,16 @@
-class githubsync {
+class githubsync(
+  $user = 'githubsync',
+) {
 
   file { '/usr/local/bin/githubsync.sh':
-    ensure => present,
-    mode   => '0755',
-    source => 'puppet:///modules/githubsync/githubsync.sh',
+    ensure  => present,
+    mode    => '0755',
+    content => template('githubsync/githubsync.sh.erb'),
   }
 
   file { ['/var/local/run/', '/var/local/run/githubsync/']:
     ensure => directory,
-    owner  => 'githubsync',
+    owner  => $user,
   }
 
   package { 'jgrep':
