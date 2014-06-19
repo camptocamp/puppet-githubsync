@@ -1,5 +1,6 @@
 class githubsync(
-  $user = 'githubsync',
+  $user  = 'githubsync',
+  $group = 'githubsync',
 ) {
 
   file { '/usr/local/bin/githubsync.sh':
@@ -11,6 +12,7 @@ class githubsync(
   file { ['/var/local/run/', '/var/local/run/githubsync/']:
     ensure => directory,
     owner  => $user,
+    group  => $group,
   }
 
   package { 'jgrep':
