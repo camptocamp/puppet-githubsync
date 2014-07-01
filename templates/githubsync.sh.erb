@@ -33,7 +33,6 @@ umask 0002
 
 PATH="/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin"
 WORKDIR="/var/local/run/githubsync"
-MODDIR="${WORKDIR}/modules"
 PMDIR="${WORKDIR}/puppetmaster"
 OUTPUT=$(mktemp)
 OUTPUT_JSON=$(mktemp)
@@ -42,50 +41,54 @@ DATE=$(date +%Y-%m-%d_%s)
 test -e /etc/profile.d/http_proxy.sh && . /etc/profile.d/http_proxy.sh
 
 default_branch () {
-  m="$1"
+  local m="$1"
 
   curl --netrc -ks "https://api.github.com/repos/camptocamp/puppet-${m}" | jgrep -s "default_branch"
 }
 
 fetch_from_github () {
-  m="$1"
+  local m="$1"
+  local d="$2"
+  local moddir="${WORKDIR}/$dir"
 
   if test -z $m; then return 1; fi
 
-  uri="${URI}/puppet-${m}"
-  dir="${MODDIR}/${m}"
-  branch=$(default_branch "${m}")
+  local uri="${URI}/puppet-${m}"
+  local dir="${moddir}/${m}"
+  local branch=$(default_branch "${m}")
 
   if test -d $dir; then
     (cd $dir && git config remote.origin.url $uri && git pull -q origin $branch)
   else
-    git clone -q $uri "${MODDIR}/${m}"
+    git clone -q $uri "${moddir}/${m}"
   fi
 }
 
 
 is_identical () {
-  local="$1"
-  github="$2"
+  local local="$1"
+  local github="$2"
 
   diff -qr -x '.git' "${local}" "${github}" 2>&1 > /dev/null
 }
 
 
 update_module () {
-
-  mod="$1"
-  commitmsg="Updated ${mod} module, using ${0}."
+  local mod="$1"
+  local dir="$2"
+  local name="${3:-$mod}"
+  local moddir="${WORKDIR}/$dir"
+  local commitmsg="Updated ${mod} module, using ${0}."
 
   test -n "${mod}" || return 1
   cd "${PMDIR}" || return 1
 
-  git remote add "up-${mod}" "${MODDIR}/${mod}"
-  git subtree pull -q -m "${commitmsg}" -P "modules/${mod}" "up-${mod}" && \
+  git remote add "up-${mod}" "${moddir}/${mod}"
+  git subtree pull -q -m "${commitmsg}" -P "$dir/${name}" "up-${mod}" && \
     echo "Successfully updated module ${mod}"
 
   if [ $? != 0 ]; then
-    echo "\n\n    @@@ Running 'git subtree pull -P modules/${mod} up-${mod}' failed, resetting changes." >> $OUTPUT
+    echo "\n\n    @@@ Running 'git subtree pull -P $dir/${name} up-${mod}' failed, resetting changes." >> $OUTPUT
     echo "Failed to pull changes using git subtree"
     #echo -n "\"${mod}\": {\"status\": \"subtree pull failed\"}" >> $OUTPUT_JSON
     git reset --hard
@@ -93,6 +96,50 @@ update_module () {
   else
     git push origin $DATE:master && \
     echo "Pushed updated module ${mod} to ${ORIGIN}"
+  fi
+}
+
+
+check_update_module () {
+  local mod="$1"
+  local dir="$2"
+  local name="${3:-$mod}"
+  local moddir="${WORKDIR}/$dir"
+
+  local local="${PMDIR}/${dir}/${name}"
+  local github="${moddir}/${mod}"
+
+  if [ "x${add_comma}" = "xtrue" ]; then
+    echo -n "," >> $OUTPUT_JSON
+  fi
+  add_comma="true"  # NOT local
+
+  mkdir -p $moddir
+
+  # re-download every module at each run
+  test -d "$github" && rm -fr "$github"
+
+  fetch_from_github $mod $dir
+
+  if [ $? != 0 ]; then
+    /bin/echo -e "\n    @@@ Failed fetching module ${mod} from github.\n" >> $OUTPUT
+    echo -n "\\\"${mod}\\\": {\\\"status\\\": \\\"failed fetching\\\"}" >> $OUTPUT_JSON
+    return
+  fi
+
+  if is_identical $local $github; then
+    echo -n "\\\"${mod}\\\": {\\\"status\\\": \\\"identical\\\"}" >> $OUTPUT_JSON
+  else
+    update_module $mod $dir $name
+
+    # diff once again, output to status file
+    if is_identical $local $github; then
+      echo -n "\\\"${mod}\\\": {\\\"status\\\": \\\"identical\\\"}" >> $OUTPUT_JSON
+    else
+      /bin/echo -e "\n    @@@ Conflict merging module '${mod}', manual investigation required:\n" >> $OUTPUT
+      diff -ur -x '.git' $local $github >> $OUTPUT
+      echo -n "\\\"${mod}\\\": {\\\"status\\\": \\\"merge conflict\\\"}" >> $OUTPUT_JSON
+    fi
   fi
 }
 
@@ -116,42 +163,10 @@ DATE_JSON=$(date --rfc-2822 -u)
 echo -n "{\"files\": { \"`facter fqdn`.json\": { \"content\": \"" >> $OUTPUT_JSON
 echo -n "{\\\"date\\\": \\\"${DATE_JSON}\\\", \\\"modules\\\": {" >> $OUTPUT_JSON
 for mod in $(ls "${PMDIR}/modules/"); do
-  local="${PMDIR}/modules/${mod}"
-  github="${MODDIR}/${mod}"
-
-  if [ "x${add_comma}" = "xtrue" ]; then
-    echo -n "," >> $OUTPUT_JSON
-  fi
-  add_comma="true"
-
-  mkdir -p $MODDIR
-
-  # re-download every module at each run
-  test -d "$github" && rm -fr "$github"
-
-  fetch_from_github $mod
-
-  if [ $? != 0 ]; then
-    /bin/echo -e "\n    @@@ Failed fetching module ${mod} from github.\n" >> $OUTPUT
-    echo -n "\\\"${mod}\\\": {\\\"status\\\": \\\"failed fetching\\\"}" >> $OUTPUT_JSON
-    continue
-  fi
-
-  if is_identical $local $github; then
-    echo -n "\\\"${mod}\\\": {\\\"status\\\": \\\"identical\\\"}" >> $OUTPUT_JSON
-  else
-    update_module $mod
-
-    # diff once again, output to status file
-    if is_identical $local $github; then
-      echo -n "\\\"${mod}\\\": {\\\"status\\\": \\\"identical\\\"}" >> $OUTPUT_JSON
-    else
-      /bin/echo -e "\n    @@@ Conflict merging module '${mod}', manual investigation required:\n" >> $OUTPUT
-      diff -ur -x '.git' $local $github >> $OUTPUT
-      echo -n "\\\"${mod}\\\": {\\\"status\\\": \\\"merge conflict\\\"}" >> $OUTPUT_JSON
-    fi
-  fi
+  check_update_module $mod "modules"
 done
+# Add hieradata
+check_update_module "hieradata-cross-site" "hieradata" "cross-site"
 echo -n "}}" >> $OUTPUT_JSON 
 echo "\"}}}" >> $OUTPUT_JSON
 
