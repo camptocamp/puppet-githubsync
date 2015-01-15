@@ -1,6 +1,6 @@
 class githubsync(
-  $user  = 'githubsync',
-  $group = 'githubsync',
+  $user  = 'git-puppet',
+  $group = 'git-puppet',
 ) {
 
   file { '/usr/local/bin/githubsync.sh':
